@@ -260,8 +260,9 @@ func (b *Builder) Run(ui packer.Ui, hook packer.Hook, cache packer.Cache) (packe
 			VNCPortMax:         b.config.VNCPortMax,
 			VNCDisablePassword: b.config.VNCDisablePassword,
 		},
-		&StepRegister{
-			Format: b.config.Format,
+		&vmwcommon.StepRegister{
+			Format:         b.config.Format,
+			KeepRegistered: b.config.KeepRegistered,
 		},
 		&vmwcommon.StepRun{
 			BootWait:           b.config.BootWait,
@@ -298,7 +299,7 @@ func (b *Builder) Run(ui packer.Ui, hook packer.Hook, cache packer.Cache) (packe
 			SkipFloppy: true,
 		},
 		&vmwcommon.StepCleanVMX{},
-		&StepUploadVMX{
+		&vmwcommon.StepUploadVMX{
 			RemoteType: b.config.RemoteType,
 		},
 		&StepExport{
