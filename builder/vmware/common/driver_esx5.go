@@ -9,9 +9,13 @@ import (
 	"io"
 	"log"
 	"net"
+	"net/url"
 	"os"
+	"os/exec"
 	"path"
 	"path/filepath"
+	"regexp"
+	"runtime"
 	"strings"
 	"time"
 
@@ -415,6 +419,110 @@ func (d *ESX5Driver) SetOutputDir(path string) {
 
 func (d *ESX5Driver) String() string {
 	return d.outputDir
+}
+
+func (d *ESX5Driver) DeployOvf(vmxPath string, vmName string) error {
+	ovftool, err := getOvfToolCmd()
+	if err != nil {
+		return err
+	}
+
+	args := d.generateDeployOvfArgs(vmName, true, vmxPath)
+	log.Printf("Deploying ovf/ova with the args: %s\n", args)
+
+	args = d.generateDeployOvfArgs(vmName, false, vmxPath)
+	var out bytes.Buffer
+	cmd := exec.Command(ovftool, args...)
+	cmd.Stdout = &out
+	if err := cmd.Run(); err != nil {
+		err := fmt.Errorf("Error importing ovf/ova: %s\n%s\n", err, out.String())
+		return err
+	}
+
+	vmId, err := extractVmId(out.String())
+	if err != nil {
+		return err
+	}
+	d.vmId = vmId
+
+	remoteVmxPath, err := d.GetVmxPath() //returns "dir/file.vmx"
+	if err != nil {
+        log.Printf("Error getting remote path to VMX: %s", err)
+		return err
+	}
+	d.SetOutputDir(filepath.Dir(remoteVmxPath))
+
+	return nil
+}
+
+func (d *ESX5Driver) GetVmxPath() (string, error) {
+	out, err := d.run(nil, "vim-cmd", "vmsvc/get.config", d.vmId)
+	if err != nil {
+		return out, err
+	}
+
+	r := regexp.MustCompile(`vmPathName = "\[datastore1\] (?P<VmPath>.*)",`)
+	//Typical line:		 vmPathName = "[datastore1] core_products_suite_1/core_products_suite_1.vmx",
+	matched := r.FindStringSubmatch(out)
+	if matched == nil {
+		return "", errors.New(fmt.Sprintf("Could not find VMX path in: %s", out))
+	}
+
+	return matched[1], nil
+}
+
+func (d *ESX5Driver) GetVmdkPath() (string, error) {
+	//only copes with one disk!!!
+	out, err := d.run(nil, "vim-cmd", "vmsvc/device.getdevices", d.vmId)
+	if err != nil {
+		return out, err
+	}
+
+	r := regexp.MustCompile(`fileName = "\[datastore1\] (?P<VmdkPath>.*)",`)
+	//Typical line:		 fileName = "[datastore1] core_products_suite_1/core_products_suite_1.vmdk",
+	matched := r.FindStringSubmatch(out)
+	if matched == nil {
+		return "", errors.New(fmt.Sprintf("Could not find vmdk path in: %s", out))
+	}
+
+	return matched[1], nil
+}
+
+func extractVmId(output string) (string, error) {
+	r := regexp.MustCompile(`vim.VirtualMachine:(?P<VmId>\d+)`)
+	matched := r.FindStringSubmatch(output)
+	if matched == nil {
+		return "", errors.New(fmt.Sprintf("Could not find VM ID in ovftool output: %s", output))
+	}
+	return matched[1], nil
+}
+
+func getOvfToolCmd() (string, error) {
+	ovftool := "ovftool"
+	if runtime.GOOS == "windows" {
+		ovftool = "ovftool.exe"
+	}
+
+	_, err := exec.LookPath(ovftool)
+	if err != nil {
+		err = fmt.Errorf("Could not find %s: %s\n", ovftool, err)
+	}
+	return ovftool, err
+}
+
+func (d *ESX5Driver) generateDeployOvfArgs(vmName string, hidePassword bool, vmxPath string) []string {
+	password := url.QueryEscape(d.Password)
+	if hidePassword {
+		password = "****"
+	}
+	return []string{
+		"--name=" + vmName,
+		"--machineOutput", //required, or extractVmId will not work!
+		"--diskMode=thin",
+		"--noSSLVerify=true",
+		vmxPath,
+		"vi://" + d.Username + ":" + password + "@" + d.Host,
+	}
 }
 
 func (d *ESX5Driver) datastorePath(path string) string {

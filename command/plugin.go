@@ -37,6 +37,7 @@ import (
 	virtualboxovfbuilder "github.com/mitchellh/packer/builder/virtualbox/ovf"
 	vmwareisobuilder "github.com/mitchellh/packer/builder/vmware/iso"
 	vmwarevmxbuilder "github.com/mitchellh/packer/builder/vmware/vmx"
+	vmwareovfbuilder "github.com/mitchellh/packer/builder/vmware/ovf"
 	amazonimportpostprocessor "github.com/mitchellh/packer/post-processor/amazon-import"
 	artificepostprocessor "github.com/mitchellh/packer/post-processor/artifice"
 	atlaspostprocessor "github.com/mitchellh/packer/post-processor/atlas"
@@ -97,6 +98,7 @@ var Builders = map[string]packer.Builder{
 	"virtualbox-ovf":      new(virtualboxovfbuilder.Builder),
 	"vmware-iso":          new(vmwareisobuilder.Builder),
 	"vmware-vmx":          new(vmwarevmxbuilder.Builder),
+	"vmware-ovf":          new(vmwareovfbuilder.Builder),
 }
 
 var Provisioners = map[string]packer.Provisioner{
