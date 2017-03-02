@@ -447,7 +447,7 @@ func (d *ESX5Driver) DeployOvf(vmxPath string, vmName string) error {
 
 	remoteVmxPath, err := d.GetVmxPath() //returns "dir/file.vmx"
 	if err != nil {
-        log.Printf("Error getting remote path to VMX: %s", err)
+		log.Printf("Error getting remote path to VMX: %s", err)
 		return err
 	}
 	d.SetOutputDir(filepath.Dir(remoteVmxPath))

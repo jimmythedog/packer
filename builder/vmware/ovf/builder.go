@@ -26,8 +26,8 @@ type Builder struct {
 type Config struct {
 	iso.Config `mapstructure:",squash"`
 
-	SourcePath          string   `mapstructure:"source_path"`
-	ctx interpolate.Context
+	SourcePath string `mapstructure:"source_path"`
+	ctx        interpolate.Context
 }
 
 func (b *Builder) Prepare(raws ...interface{}) ([]string, error) {
@@ -162,7 +162,7 @@ func (b *Builder) Run(ui packer.Ui, hook packer.Hook, cache packer.Cache) (packe
 			Format: b.config.Config.Format,
 		},
 		&StepDownloadVMX{
-			RemoteType:        b.config.Config.RemoteType,
+			RemoteType: b.config.Config.RemoteType,
 		},
 		&vmwcommon.StepSuppressMessages{},
 		&common.StepHTTPServer{
@@ -180,7 +180,7 @@ func (b *Builder) Run(ui packer.Ui, hook packer.Hook, cache packer.Cache) (packe
 			VNCDisablePassword: b.config.Config.VNCDisablePassword,
 		},
 		&vmwcommon.StepUploadVMX{
-			RemoteType:        b.config.Config.RemoteType,
+			RemoteType: b.config.Config.RemoteType,
 		},
 		&vmwcommon.StepRun{
 			BootWait:           b.config.Config.BootWait,

@@ -2,11 +2,11 @@ package ovf
 
 import (
 	"fmt"
-	"log"
 	"github.com/mitchellh/multistep"
-	"github.com/mitchellh/packer/packer"
 	vmwcommon "github.com/mitchellh/packer/builder/vmware/common"
 	iso "github.com/mitchellh/packer/builder/vmware/iso"
+	"github.com/mitchellh/packer/packer"
+	"log"
 	"time"
 )
 
@@ -35,7 +35,7 @@ func (s *StepDeployOvf) Run(state multistep.StateBag) multistep.StepAction {
 
 	ui.Say("Deploying ova/ovf...")
 	if err := remoteDriver.DeployOvf(c.SourcePath, c.Config.VMName); err != nil {
-        log.Printf("Error during ova/ovf deploy: %s", err)
+		log.Printf("Error during ova/ovf deploy: %s", err)
 		state.Put("error", err)
 		ui.Error(err.Error())
 		return multistep.ActionHalt
@@ -43,7 +43,7 @@ func (s *StepDeployOvf) Run(state multistep.StateBag) multistep.StepAction {
 
 	remoteVmxPath, err := remoteDriver.GetVmxPath() //returns "dir/file.vmx"
 	if err != nil {
-        log.Printf("Error getting remote path to VMX: %s", err)
+		log.Printf("Error getting remote path to VMX: %s", err)
 		state.Put("error", fmt.Errorf("Error getting remote path to VMX: %s", err))
 		return multistep.ActionHalt
 	}
@@ -52,7 +52,7 @@ func (s *StepDeployOvf) Run(state multistep.StateBag) multistep.StepAction {
 
 	remoteVmdkPath, err := remoteDriver.GetVmdkPath() //returns "dir/file.vmdk"
 	if err != nil {
-        log.Printf("Error getting remote path to VMDK: %s", err)
+		log.Printf("Error getting remote path to VMDK: %s", err)
 		state.Put("error", fmt.Errorf("Error getting remote path to VMDK: %s", err))
 		return multistep.ActionHalt
 	}
@@ -95,7 +95,7 @@ func (s *StepDeployOvf) Cleanup(state multistep.StateBag) {
 					log.Printf("Machine destroyed cleanly")
 					break
 				}
-				if (i < maxAttempts) {
+				if i < maxAttempts {
 					time.Sleep(150 * time.Millisecond)
 				} else {
 					log.Printf("Machine has not destroyed cleanly - manually deleting...")
