@@ -6,8 +6,8 @@ import (
 	"github.com/mitchellh/multistep"
 	vmwcommon "github.com/mitchellh/packer/builder/vmware/common"
 	"github.com/mitchellh/packer/packer"
-	"io/ioutil"
 	"os"
+	"path/filepath"
 )
 
 // This step download the VMX to the remote host
@@ -39,17 +39,16 @@ func (s *StepDownloadVMX) Run(state multistep.StateBag) multistep.StepAction {
 		return multistep.ActionHalt
 	}
 
-	tempFile, err := ioutil.TempFile("", ".vmx")
-	if err != nil {
-		state.Put("error", fmt.Errorf("Error creating temp vmx file: %s", err))
-		return multistep.ActionHalt
-	}
-
-	s.vmxPath = tempFile.Name()
-	remoteVmxPath := state.Get("remote_vmx_path").(string)
+	s.vmxPath = state.Get("vmx_path").(string)
 	ui := state.Get("ui").(packer.Ui)
-	ui.Say(fmt.Sprintf("Downloading VMX from: %s to: %s", remoteVmxPath, s.vmxPath))
-	if err := remoteDriver.Download(remoteVmxPath, s.vmxPath); err != nil {
+	ui.Say(fmt.Sprintf("Downloading VMX from: %s to: %s", s.vmxPath, s.vmxPath))
+
+    if err := os.MkdirAll(filepath.Dir(s.vmxPath), 0700); err != nil {
+		state.Put("error", fmt.Errorf("Error making directory for local VMX: %s", err))
+		return multistep.ActionHalt
+    }
+
+    if err := remoteDriver.Download(s.vmxPath, s.vmxPath); err != nil {
 		state.Put("error", fmt.Errorf("Error writing VMX: %s", err))
 		return multistep.ActionHalt
 	}
@@ -64,7 +63,8 @@ func (s *StepDownloadVMX) Cleanup(multistep.StateBag) {
 	log.Printf("StepDownloadVMX.Cleanup entry")
 	if s.vmxPath != "" {
 		log.Printf("Deleting %s", s.vmxPath)
-		os.RemoveAll(s.vmxPath)
+		os.Remove(s.vmxPath)
+		os.Remove(filepath.Dir(s.vmxPath))
 	}
 	log.Printf("StepDownloadVMX.Cleanup exit")
 }

@@ -48,7 +48,7 @@ func (s *StepDeployOvf) Run(state multistep.StateBag) multistep.StepAction {
 		return multistep.ActionHalt
 	}
 	log.Printf("Remote VMX Path = %s", remoteVmxPath)
-	state.Put("remote_vmx_path", remoteVmxPath)
+	state.Put("vmx_path", remoteVmxPath)
 
 	remoteVmdkPath, err := remoteDriver.GetVmdkPath() //returns "dir/file.vmdk"
 	if err != nil {
