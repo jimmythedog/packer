@@ -2,10 +2,10 @@ package ovf
 
 import (
 	"fmt"
-	"log"
 	"github.com/mitchellh/multistep"
 	vmwcommon "github.com/mitchellh/packer/builder/vmware/common"
 	"github.com/mitchellh/packer/packer"
+	"log"
 	"os"
 	"path/filepath"
 )
@@ -21,7 +21,7 @@ import (
 //	 <nothing>
 type StepDownloadVMX struct {
 	RemoteType string
-	vmxPath string
+	vmxPath    string
 }
 
 func (s *StepDownloadVMX) Run(state multistep.StateBag) multistep.StepAction {
@@ -43,12 +43,12 @@ func (s *StepDownloadVMX) Run(state multistep.StateBag) multistep.StepAction {
 	ui := state.Get("ui").(packer.Ui)
 	ui.Say(fmt.Sprintf("Downloading VMX from: %s to: %s", s.vmxPath, s.vmxPath))
 
-    if err := os.MkdirAll(filepath.Dir(s.vmxPath), 0700); err != nil {
+	if err := os.MkdirAll(filepath.Dir(s.vmxPath), 0700); err != nil {
 		state.Put("error", fmt.Errorf("Error making directory for local VMX: %s", err))
 		return multistep.ActionHalt
-    }
+	}
 
-    if err := remoteDriver.Download(s.vmxPath, s.vmxPath); err != nil {
+	if err := remoteDriver.Download(s.vmxPath, s.vmxPath); err != nil {
 		state.Put("error", fmt.Errorf("Error writing VMX: %s", err))
 		return multistep.ActionHalt
 	}
@@ -63,8 +63,13 @@ func (s *StepDownloadVMX) Cleanup(multistep.StateBag) {
 	log.Printf("StepDownloadVMX.Cleanup entry")
 	if s.vmxPath != "" {
 		log.Printf("Deleting %s", s.vmxPath)
-		os.Remove(s.vmxPath)
-		os.Remove(filepath.Dir(s.vmxPath))
+		if err := os.Remove(s.vmxPath); err != nil {
+			log.Printf("Failed to remove local VMX file(%s): %s", s.vmxPath, err)
+		}
+		vmxDir := filepath.Dir(s.vmxPath)
+		if err := os.Remove(vmxDir); err != nil {
+			log.Printf("Failed to remove local VMX dir(%s): %s", vmxDir, err)
+		}
 	}
 	log.Printf("StepDownloadVMX.Cleanup exit")
 }
