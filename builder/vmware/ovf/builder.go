@@ -164,14 +164,15 @@ func (b *Builder) Run(ui packer.Ui, hook packer.Hook, cache packer.Cache) (packe
 		&StepDownloadVMX{
 			RemoteType: b.config.Config.RemoteType,
 		},
+		&vmwcommon.StepConfigureVMX{
+			CustomData: b.config.Config.VMXData,
+			VMName:     b.config.Config.VMName,
+		},
 		&vmwcommon.StepSuppressMessages{},
 		&common.StepHTTPServer{
 			HTTPDir:     b.config.Config.HTTPDir,
 			HTTPPortMin: b.config.Config.HTTPPortMin,
 			HTTPPortMax: b.config.Config.HTTPPortMax,
-		},
-		&vmwcommon.StepConfigureVMX{
-			CustomData: b.config.Config.VMXData,
 		},
 		&vmwcommon.StepConfigureVNC{
 			VNCBindAddress:     b.config.Config.VNCBindAddress,
