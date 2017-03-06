@@ -124,7 +124,17 @@ func (d *ESX5Driver) IsRunning(string) (bool, error) {
 
 func (d *ESX5Driver) ReloadVM() error {
 	if d.vmId != "" {
-		return d.sh("vim-cmd", "vmsvc/reload", d.vmId)
+		if err := d.sh("vim-cmd", "vmsvc/reload", d.vmId); err != nil {
+			log.Printf("Error trying to reload vm: %s", err)
+			return err
+		}
+		for i := 0; i < 20; i++ {
+			time.Sleep((time.Duration(i) * time.Second) + 1)
+			if err := d.sh("vim-cmd", "vmsvc/get.config", d.vmId); err == nil {
+				return nil
+			}
+		}
+		return errors.New("VM did not settle down after reloading of configuration")
 	} else {
 		return nil
 	}

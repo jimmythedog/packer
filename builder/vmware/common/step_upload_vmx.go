@@ -6,7 +6,6 @@ import (
 
 	"github.com/mitchellh/multistep"
 	"github.com/mitchellh/packer/packer"
-	"time"
 )
 
 // This step upload the VMX to the remote host
@@ -40,7 +39,6 @@ func (c *StepUploadVMX) Run(state multistep.StateBag) multistep.StepAction {
 		if err := remoteDriver.ReloadVM(); err != nil {
 			ui.Error(fmt.Sprintf("Error reload VM: %s", err))
 		}
-		time.Sleep(10 * time.Second)
 	}
 
 	return multistep.ActionContinue
