@@ -128,6 +128,7 @@ func (d *ESX5Driver) ReloadVM() error {
 			log.Printf("Error trying to reload vm: %s", err)
 			return err
 		}
+		//Allow reloading to happen...
 		for i := 0; i < 20; i++ {
 			time.Sleep((time.Duration(i) * time.Second) + 1)
 			if err := d.sh("vim-cmd", "vmsvc/get.config", d.vmId); err == nil {
@@ -480,6 +481,23 @@ func (d *ESX5Driver) DeployOvf(vmxPath string, vmName string) (string, error) {
 	if err := d.unregisterVm(vmId); err != nil {
 		log.Printf("Error unregistering ovf imported VM (ID=%s): %s", vmId, err)
 		return "", err
+	}
+
+	remoteDir := filepath.Dir(remoteVmxPath)
+	filesToClean, err := d.run(nil, "find", strconv.Quote(d.datastorePath(remoteDir)), "-name '*.vmxf'")
+	if err != nil {
+		return "", fmt.Errorf("Failed to get the file list to clean: %s", err)
+	}
+	linesToArray := func(lines string) []string { return strings.Split(strings.Trim(lines, "\n"), "\n") }
+	for _, f := range linesToArray(filesToClean) {
+		// TODO: linesToArray should really return [] if the string is empty. Instead it returns [""]
+		if f == "" {
+			continue
+		}
+		err := d.sh("rm", "-f", strconv.Quote(f))
+		if err != nil {
+			return "", fmt.Errorf("Failed to clean %s: %s", f, err)
+		}
 	}
 
 	return remoteVmxPath, nil
