@@ -168,7 +168,11 @@ func (d *ESX5Driver) SuppressMessages(vmxPath string) error {
 }
 
 func (d *ESX5Driver) Unregister(vmxPathLocal string) error {
-	return d.sh("vim-cmd", "vmsvc/unregister", d.vmId)
+	return d.unregisterVm(d.vmId)
+}
+
+func (d *ESX5Driver) unregisterVm(vmId string) error {
+	return d.sh("vim-cmd", "vmsvc/unregister", vmId)
 }
 
 func (d *ESX5Driver) Destroy() error {
@@ -418,6 +422,10 @@ func (d *ESX5Driver) Remove(path string) error {
 	return d.sh("rm", strconv.Quote(path))
 }
 
+func (d *ESX5Driver) RemoveTree(path string) error {
+	return d.sh("rm", "-rf", strconv.Quote(d.datastorePath(path)))
+}
+
 func (d *ESX5Driver) RemoveAll() error {
 	return d.sh("rm", "-rf", strconv.Quote(d.outputDir))
 }
@@ -430,10 +438,10 @@ func (d *ESX5Driver) String() string {
 	return d.outputDir
 }
 
-func (d *ESX5Driver) DeployOvf(vmxPath string, vmName string) error {
+func (d *ESX5Driver) DeployOvf(vmxPath string, vmName string) (string, error) {
 	ovftool, err := getOvfToolCmd()
 	if err != nil {
-		return err
+		return "", err
 	}
 
 	args := d.generateDeployOvfArgs(vmName, true, vmxPath)
@@ -445,56 +453,44 @@ func (d *ESX5Driver) DeployOvf(vmxPath string, vmName string) error {
 	cmd.Stdout = &out
 	if err := cmd.Run(); err != nil {
 		err := fmt.Errorf("Error importing ovf/ova: %s\n%s\n", err, out.String())
-		return err
+		return "", err
 	}
 
-	vmId, err := extractVmId(out.String())
+	ovfOutput := out.String()
+	vmId, err := extractVmId(ovfOutput)
 	if err != nil {
-		return err
+		return "", err
 	}
-	d.vmId = vmId
 
-	remoteVmxPath, err := d.GetVmxPath() //returns "dir/file.vmx"
+	remoteVmxPath, err := d.getVmxPath(vmId) //returns "dir/file.vmx"
 	if err != nil {
-		log.Printf("Error getting remote path to VMX: %s", err)
-		return err
+		return "", err
 	}
-	d.SetOutputDir(filepath.Dir(remoteVmxPath))
 
-	return nil
+	if err := d.unregisterVm(vmId); err != nil {
+		log.Printf("Error unregistering ovf imported VM (ID=%s): %s", vmId, err)
+		return "", err
+	}
+
+	return remoteVmxPath, nil
 }
 
-func (d *ESX5Driver) GetVmxPath() (string, error) {
-	out, err := d.run(nil, "vim-cmd", "vmsvc/get.config", d.vmId)
+func (d *ESX5Driver) getVmxPath(vmId string) (string, error) {
+	out, err := d.run(nil, "vim-cmd", "vmsvc/get.config", vmId)
 	if err != nil {
 		return out, err
 	}
 
-	r := regexp.MustCompile(`vmPathName = "\[datastore1\] (?P<VmPath>.*)",`)
-	//Typical line:		 vmPathName = "[datastore1] core_products_suite_1/core_products_suite_1.vmx",
+	r := regexp.MustCompile(`vmPathName = "\[datastore1\] (?P<VmPath>.*)",`) //TODO datastore name is configurable?
+	//Typical line:          vmPathName = "[datastore1] core_products_suite_1/core_products_suite_1.vmx",
 	matched := r.FindStringSubmatch(out)
 	if matched == nil {
 		return "", errors.New(fmt.Sprintf("Could not find VMX path in: %s", out))
 	}
 
-	return matched[1], nil
-}
-
-func (d *ESX5Driver) GetVmdkPath() (string, error) {
-	//only copes with one disk!!!
-	out, err := d.run(nil, "vim-cmd", "vmsvc/device.getdevices", d.vmId)
-	if err != nil {
-		return out, err
-	}
-
-	r := regexp.MustCompile(`fileName = "\[datastore1\] (?P<VmdkPath>.*)",`)
-	//Typical line:		 fileName = "[datastore1] core_products_suite_1/core_products_suite_1.vmdk",
-	matched := r.FindStringSubmatch(out)
-	if matched == nil {
-		return "", errors.New(fmt.Sprintf("Could not find vmdk path in: %s", out))
-	}
-
-	return matched[1], nil
+	vmxPath := matched[1]
+	log.Printf("Remote VMX path: %s", vmxPath)
+	return vmxPath, nil
 }
 
 func extractVmId(output string) (string, error) {
@@ -633,6 +629,7 @@ func (d *ESX5Driver) Download(src, dst string) error {
 		return err
 	}
 	defer file.Close()
+	log.Printf("Downloading %s to %s", d.datastorePath(src), file.Name)
 	return d.comm.Download(d.datastorePath(src), file)
 }
 

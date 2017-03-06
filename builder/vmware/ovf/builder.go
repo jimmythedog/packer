@@ -11,6 +11,7 @@ import (
 	"github.com/mitchellh/multistep"
 	vmwcommon "github.com/mitchellh/packer/builder/vmware/common"
 	iso "github.com/mitchellh/packer/builder/vmware/iso"
+	vmx "github.com/mitchellh/packer/builder/vmware/vmx"
 	"github.com/mitchellh/packer/common"
 	"github.com/mitchellh/packer/helper/communicator"
 	"github.com/mitchellh/packer/helper/config"
@@ -161,8 +162,10 @@ func (b *Builder) Run(ui packer.Ui, hook packer.Hook, cache packer.Cache) (packe
 		&StepDeployOvf{
 			Format: b.config.Config.Format,
 		},
-		&StepDownloadVMX{
-			RemoteType: b.config.Config.RemoteType,
+		&vmx.StepCloneVMX{
+			OutputDir: b.config.OutputDir,
+			Path:      b.config.SourcePath,
+			VMName:    b.config.VMName,
 		},
 		&vmwcommon.StepConfigureVMX{
 			CustomData: b.config.Config.VMXData,
@@ -182,6 +185,10 @@ func (b *Builder) Run(ui packer.Ui, hook packer.Hook, cache packer.Cache) (packe
 		},
 		&vmwcommon.StepUploadVMX{
 			RemoteType: b.config.Config.RemoteType,
+		},
+		&vmwcommon.StepRegister{
+			Format:         b.config.Config.Format,
+			KeepRegistered: false,
 		},
 		&vmwcommon.StepRun{
 			BootWait:           b.config.Config.BootWait,
@@ -215,9 +222,13 @@ func (b *Builder) Run(ui packer.Ui, hook packer.Hook, cache packer.Cache) (packe
 		},
 		&vmwcommon.StepConfigureVMX{
 			CustomData: b.config.Config.VMXDataPost,
+			VMName:     b.config.Config.VMName,
 			SkipFloppy: true,
 		},
 		&vmwcommon.StepCleanVMX{},
+		&vmwcommon.StepUploadVMX{
+			RemoteType: b.config.RemoteType,
+		},
 		&iso.StepExport{
 			Format: b.config.Config.Format,
 		},

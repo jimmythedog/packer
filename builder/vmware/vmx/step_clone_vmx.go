@@ -32,10 +32,11 @@ func (s *StepCloneVMX) Run(state multistep.StateBag) multistep.StepAction {
 	vmxPath := filepath.Join(s.OutputDir, s.VMName+".vmx")
 
 	ui.Say("Cloning source VM...")
-	log.Printf("Cloning from: %s", s.Path)
+	path := state.Get("source_path").(string)
+	log.Printf("Cloning from: %s", path)
 	log.Printf("Cloning to: %s", vmxPath)
 
-	if err := driver.Clone(vmxPath, s.Path); err != nil {
+	if err := driver.Clone(vmxPath, path); err != nil {
 		return halt(err)
 	}
 

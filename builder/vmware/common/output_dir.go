@@ -9,6 +9,7 @@ type OutputDir interface {
 	ListFiles() ([]string, error)
 	MkdirAll() error
 	Remove(string) error
+	RemoveTree(string) error
 	RemoveAll() error
 	SetOutputDir(string)
 	String() string

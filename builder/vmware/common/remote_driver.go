@@ -30,12 +30,6 @@ type RemoteDriver interface {
 	ReloadVM() error
 
 	//DeployOvf deploys the specified ova/ovf file, with the specified vmName.
-	//It returns any error encountered.
-	DeployOvf(string, string) error
-
-	// Gets the relative path to the vmx file
-	GetVmxPath() (string, error)
-
-	// Gets the relative path to the vmdk file
-	GetVmdkPath() (string, error)
+	//It returns the remote path to the vmx file (minus the preceeding path to the datastore), and any error encountered.
+	DeployOvf(string, string) (string, error)
 }

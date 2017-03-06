@@ -40,6 +40,10 @@ func (d *LocalOutputDir) Remove(path string) error {
 	return os.Remove(path)
 }
 
+func (d *LocalOutputDir) RemoveTree(path string) error {
+	return os.RemoveAll(path)
+}
+
 func (d *LocalOutputDir) RemoveAll() error {
 	return os.RemoveAll(d.dir)
 }
