@@ -25,6 +25,11 @@ func (d *Fusion5Driver) Clone(dst, src string) error {
 	return errors.New("Cloning is not supported with Fusion 5. Please use Fusion 6+.")
 }
 
+func (d *Fusion5Driver) ImportOvf(ovfPath string, vmName string, outputPath string) (vmxPath, diskPath string, err error) {
+	err = errors.New("ImportOvf is not supported with Fusion 5. Please use Fusion 6+.")
+	return
+}
+
 func (d *Fusion5Driver) CompactDisk(diskPath string) error {
 	defragCmd := exec.Command(d.vdiskManagerPath(), "-d", diskPath)
 	if _, _, err := runAndLog(defragCmd); err != nil {

@@ -52,20 +52,9 @@ func (s *StepCloneVMX) Run(state multistep.StateBag) multistep.StepAction {
 		}
 	}
 
-	vmxData, err := vmwcommon.ReadVMX(vmxPath)
+	diskName, err := vmwcommon.FindRootDiskFilename(vmxPath)
 	if err != nil {
 		return halt(err)
-	}
-
-	var diskName string
-	if _, ok := vmxData["scsi0:0.filename"]; ok {
-		diskName = vmxData["scsi0:0.filename"]
-	}
-	if _, ok := vmxData["sata0:0.filename"]; ok {
-		diskName = vmxData["sata0:0.filename"]
-	}
-	if _, ok := vmxData["ide0:0.filename"]; ok {
-		diskName = vmxData["ide0:0.filename"]
 	}
 	if diskName == "" {
 		return halt(fmt.Errorf("Root disk filename could not be found!"))

@@ -105,3 +105,29 @@ func ReadVMX(path string) (map[string]string, error) {
 
 	return ParseVMX(string(data)), nil
 }
+
+//FindRootDiskFilename takes a path to a VMX file and returns the "root" (first) disk filename found in it - may be ""
+func FindRootDiskFilename(path string) (string, error) {
+	vmxData, err := ReadVMX(path)
+	if err != nil {
+		log.Printf("Error when looking for root disk filename: %s", err)
+		return "", err
+	}
+
+	var diskName string
+	if _, ok := vmxData["scsi0:0.filename"]; ok {
+		diskName = vmxData["scsi0:0.filename"]
+	}
+	if _, ok := vmxData["sata0:0.filename"]; ok {
+		diskName = vmxData["sata0:0.filename"]
+	}
+	if _, ok := vmxData["ide0:0.filename"]; ok {
+		diskName = vmxData["ide0:0.filename"]
+	}
+
+	if diskName == "" {
+		log.Printf("Root disk filename could not be found!")
+	}
+
+	return diskName, nil
+}

@@ -26,6 +26,11 @@ func (d *Workstation9Driver) Clone(dst, src string) error {
 	return errors.New("Cloning is not supported with VMware WS version 9. Please use VMware WS version 10, or greater.")
 }
 
+func (d *Workstation9Driver) ImportOvf(ovfPath string, vmName string, outputPath string) (vmxPath, diskPath string, err error) {
+	err = errors.New("ImportOvf is not supported with Workstation 9. Please use Workstation 10+.")
+	return
+}
+
 func (d *Workstation9Driver) CompactDisk(diskPath string) error {
 	defragCmd := exec.Command(d.VdiskManagerPath, "-d", diskPath)
 	if _, _, err := runAndLog(defragCmd); err != nil {
