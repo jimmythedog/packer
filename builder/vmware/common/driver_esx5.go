@@ -7,6 +7,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"io/ioutil"
 	"log"
 	"net"
 	"net/url"
@@ -454,12 +455,26 @@ func (d *ESX5Driver) ImportOvf(ovfPath string, vmName string, outputPath string)
 	}
 	d.vmId = vmId
 
-	vmxPath, err = d.getVmxPath() //returns "dir/file.vmx"
+	remoteVmxPath, err := d.getVmxPath() //returns "dir/file.vmx"
 	if err != nil {
 		log.Printf("Error getting remote path to VMX: %s", err)
 		return
 	}
-	d.SetOutputDir(filepath.Dir(vmxPath))
+	d.SetOutputDir(filepath.Dir(remoteVmxPath))
+
+	//Download the vmx file to a local temp dir...
+	tempDir, err := ioutil.TempDir("", "packer-ovf")
+	if err != nil {
+		return
+	}
+	vmxPath = filepath.Join(tempDir, filepath.Base(remoteVmxPath))
+
+	log.Printf("Downloading VMX from: %s to: %s", remoteVmxPath, vmxPath)
+
+	err = d.Download(remoteVmxPath, vmxPath)
+	if err != nil {
+		return
+	}
 
 	diskPath, err = d.getVmdkPath() //returns "dir/file.vmdk"
 	if err != nil {
