@@ -76,9 +76,6 @@ func (b *Builder) Run(ui packer.Ui, hook packer.Hook, cache packer.Cache) (packe
 		&StepImportOvf{
 			Format: b.config.Format,
 		},
-		&StepDownloadVMX{
-			RemoteType: b.config.RemoteType,
-		},
 		&vmwcommon.StepConfigureVMX{
 			CustomData: b.config.VMXData,
 			VMName:     b.config.VMName,
