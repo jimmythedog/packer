@@ -1,7 +1,6 @@
 package common
 
 import (
-	"errors"
 	"os/exec"
 )
 
@@ -30,8 +29,7 @@ func (d *Player6Driver) Clone(dst, src string) error {
 }
 
 func (d *Player6Driver) ImportOvf(ovfPath string, vmName string, outputPath string) (vmxPath, diskPath string, err error) {
-	err = errors.New("ImportOvf is not yet implemented")
-	return
+	return importOvfToVmx(ovfPath, vmName, outputPath)
 }
 
 func (d *Player6Driver) Verify() error {
