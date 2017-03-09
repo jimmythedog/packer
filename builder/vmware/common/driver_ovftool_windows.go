@@ -4,7 +4,9 @@
 package common
 
 import (
+	"os"
 	"os/exec"
+	"path/filepath"
 )
 
 func ovftoolFindOvfTool() (string, error) {
