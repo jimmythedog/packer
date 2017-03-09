@@ -27,6 +27,11 @@ func (d *Player5Driver) Clone(dst, src string) error {
 	return errors.New("Cloning is not supported with VMWare Player version 5. Please use VMWare Player version 6, or greater.")
 }
 
+func (d *Player5Driver) ImportOvf(ovfPath string, vmName string, outputPath string) (vmxPath, diskPath string, err error) {
+	err = errors.New("ImportOvf is not supported with VMWare Player version 5. Please use VMWare Player version 6, or greater.")
+	return
+}
+
 func (d *Player5Driver) CompactDisk(diskPath string) error {
 	if d.QemuImgPath != "" {
 		return d.qemuCompactDisk(diskPath)

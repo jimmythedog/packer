@@ -29,6 +29,14 @@ type DriverMock struct {
 	IsRunningResult bool
 	IsRunningErr    error
 
+	ImportOvfCalled         bool
+	ImportOvfOvfPath        string
+	ImportOvfVmName         string
+	ImportOvfOutputPath     string
+	ImportOvfVmxPathResult  string
+	ImportOvfVmdkPathResult string
+	ImportOvfErr            error
+
 	CommHostCalled bool
 	CommHostState  multistep.StateBag
 	CommHostResult string
@@ -67,6 +75,14 @@ func (d *DriverMock) Clone(dst string, src string) error {
 	d.CloneDst = dst
 	d.CloneSrc = src
 	return d.CloneErr
+}
+
+func (d *DriverMock) ImportOvf(ovfPath string, vmName string, outputPath string) (string, string, error) {
+	d.ImportOvfCalled = true
+	d.ImportOvfOvfPath = ovfPath
+	d.ImportOvfVmName = vmName
+	d.ImportOvfOutputPath = outputPath
+	return d.ImportOvfVmxPathResult, d.ImportOvfVmdkPathResult, d.ImportOvfErr
 }
 
 func (d *DriverMock) CompactDisk(path string) error {

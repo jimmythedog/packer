@@ -58,6 +58,10 @@ type Driver interface {
 	// appear to exist and so on. If everything is okay, this doesn't
 	// return an error. Otherwise, this returns an error.
 	Verify() error
+
+	//ImportOvf imports the specified ova/ovf file, with the specified vmName, into the output directory
+	//It returns the vmx path, the vmdk disk path, and any error encountered.
+	ImportOvf(ovfPath string, vmName string, outputPath string) (vmxPath, diskPath string, err error)
 }
 
 // NewDriver returns a new driver implementation for this operating
