@@ -160,6 +160,9 @@ func (b *Builder) Run(ui packer.Ui, hook packer.Hook, cache packer.Cache) (packe
 	default:
 		dir = new(vmwcommon.LocalOutputDir)
 	}
+
+	exportOutputPath := b.config.OutputDir
+
 	if b.config.RemoteType != "" && b.config.Format != "" {
 		b.config.OutputDir = b.config.VMName
 	}
@@ -172,6 +175,7 @@ func (b *Builder) Run(ui packer.Ui, hook packer.Hook, cache packer.Cache) (packe
 	state.Put("debug", b.config.PackerDebug)
 	state.Put("dir", dir)
 	state.Put("driver", driver)
+	state.Put("exportPath", exportOutputPath)
 	state.Put("hook", hook)
 	state.Put("ui", ui)
 	state.Put("sshConfig", &b.config.SSHConfig)
@@ -297,7 +301,7 @@ func (b *Builder) Run(ui packer.Ui, hook packer.Hook, cache packer.Cache) (packe
 	var files []string
 	if b.config.RemoteType != "" && b.config.Format != "" {
 		dir = new(vmwcommon.LocalOutputDir)
-		dir.SetOutputDir(b.config.OutputDir)
+		dir.SetOutputDir(exportOutputPath)
 		files, err = dir.ListFiles()
 	} else {
 		files, err = state.Get("dir").(vmwcommon.OutputDir).ListFiles()
