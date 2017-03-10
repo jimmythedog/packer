@@ -6,7 +6,6 @@ import (
 	"net/url"
 	"os"
 	"os/exec"
-	"runtime"
 	"strings"
 
 	"github.com/mitchellh/multistep"
@@ -50,13 +49,9 @@ func (s *StepExport) Run(state multistep.StateBag) multistep.StepAction {
 		return multistep.ActionContinue
 	}
 
-	ovftool := "ovftool"
-	if runtime.GOOS == "windows" {
-		ovftool = "ovftool.exe"
-	}
-
-	if _, err := exec.LookPath(ovftool); err != nil {
-		err = fmt.Errorf("Error %s not found: %s", ovftool, err)
+	ovftool, err := ovftoolFindOvfTool()
+	if err != nil {
+		err = fmt.Errorf("Could not find ovftool: %s", err)
 		state.Put("error", err)
 		ui.Error(err.Error())
 		return multistep.ActionHalt
