@@ -175,7 +175,6 @@ func (b *Builder) Run(ui packer.Ui, hook packer.Hook, cache packer.Cache) (packe
 	state.Put("debug", b.config.PackerDebug)
 	state.Put("dir", dir)
 	state.Put("driver", driver)
-	state.Put("exportPath", exportOutputPath)
 	state.Put("hook", hook)
 	state.Put("ui", ui)
 	state.Put("sshConfig", &b.config.SSHConfig)
@@ -276,6 +275,7 @@ func (b *Builder) Run(ui packer.Ui, hook packer.Hook, cache packer.Cache) (packe
 			SkipExport:     b.config.SkipExport,
 			VMName:         b.config.VMName,
 			OVFToolOptions: b.config.OVFToolOptions,
+			OutputDir:      exportOutputPath,
 		},
 	}
 
