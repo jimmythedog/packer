@@ -26,3 +26,10 @@ the following VMware builders:
     existing VMware VM you want to use as the source. As an additional benefit,
     you can feed the artifact of this builder back into Packer to iterate on
     a machine.
+
+-   [vmware-ovf](/docs/builders/vmware-ovf.html) -     This VMware Packer builder
+    is able to create VMware virtual machines from a local ova/ovf file. It
+    currently supports building virtual machines on hosts running VMware Fusion
+    Professional for OS X, VMware Workstation for Linux and Windows, and VMware
+    Player on Linux.
+
