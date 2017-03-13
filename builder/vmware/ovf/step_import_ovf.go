@@ -20,7 +20,7 @@ func (s *StepImportOvf) Run(state multistep.StateBag) multistep.StepAction {
 	ui := state.Get("ui").(packer.Ui)
 
 	driver := state.Get("driver").(vmwcommon.Driver)
-	ui.Say("Deploying ova/ovf...")
+	ui.Say("Importing ova/ovf...")
 	dir := state.Get("dir").(vmwcommon.OutputDir)
 	vmxPath, vmdkPath, err := driver.ImportOvf(c.SourcePath, c.VMName, dir.String())
 	if err != nil {

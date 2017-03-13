@@ -60,7 +60,7 @@ func (s *StepCloneVMX) Run(state multistep.StateBag) multistep.StepAction {
 		return halt(fmt.Errorf("Root disk filename could not be found!"))
 	}
 
-	state.Put("full_disk_path", filepath.Join(s.OutputDir, diskName))
+	state.Put("full_disk_path", diskName)
 	state.Put("vmx_path", vmxPath)
 	return multistep.ActionContinue
 }
