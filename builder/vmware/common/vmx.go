@@ -7,6 +7,7 @@ import (
 	"io/ioutil"
 	"log"
 	"os"
+	"path/filepath"
 	"regexp"
 	"sort"
 	"strings"
@@ -106,7 +107,7 @@ func ReadVMX(path string) (map[string]string, error) {
 	return ParseVMX(string(data)), nil
 }
 
-//FindRootDiskFilename takes a path to a VMX file and returns the "root" (first) disk filename found in it - may be ""
+//FindRootDiskFilename takes a path to a VMX file and returns the "root" (first) disk file path found in it - may be ""
 func FindRootDiskFilename(path string) (string, error) {
 	vmxData, err := ReadVMX(path)
 	if err != nil {
@@ -114,20 +115,22 @@ func FindRootDiskFilename(path string) (string, error) {
 		return "", err
 	}
 
-	var diskName string
+	var diskPath string
 	if _, ok := vmxData["scsi0:0.filename"]; ok {
-		diskName = vmxData["scsi0:0.filename"]
+		diskPath = vmxData["scsi0:0.filename"]
 	}
 	if _, ok := vmxData["sata0:0.filename"]; ok {
-		diskName = vmxData["sata0:0.filename"]
+		diskPath = vmxData["sata0:0.filename"]
 	}
 	if _, ok := vmxData["ide0:0.filename"]; ok {
-		diskName = vmxData["ide0:0.filename"]
+		diskPath = vmxData["ide0:0.filename"]
 	}
 
-	if diskName == "" {
+	if diskPath == "" {
 		log.Printf("Root disk filename could not be found!")
+	} else {
+		diskPath = filepath.Join(filepath.Dir(path), diskPath)
 	}
 
-	return diskName, nil
+	return diskPath, nil
 }
