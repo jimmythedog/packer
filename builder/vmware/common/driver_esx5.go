@@ -448,19 +448,17 @@ func (d *ESX5Driver) ImportOvf(ovfPath string, vmName string, outputPath string)
 		return
 	}
 
-	args := d.generateImportOvfArgs(vmName, true, ovfPath)
+	args := d.generateImportOvfArgs(vmName, d.Datastore, true, ovfPath)
 	log.Printf("Deploying ovf/ova with the args: %s\n", args)
 
-	args = d.generateImportOvfArgs(vmName, false, ovfPath)
-	var out bytes.Buffer
-	cmd := exec.Command(ovftool, args...)
-	cmd.Stdout = &out
-	err = cmd.Run()
+	args = d.generateImportOvfArgs(vmName, d.Datastore, false, ovfPath)
+	out, err := exec.Command(ovftool, args...).Output()
 	if err != nil {
+		log.Fatalf("Error running ovftool: %s", err)
 		return
 	}
 
-	vmId, err := extractVmId(out.String())
+	vmId, err := extractVmId(string(out))
 	if err != nil {
 		return
 	}
@@ -542,13 +540,14 @@ func extractVmId(output string) (string, error) {
 	return matched[1], nil
 }
 
-func (d *ESX5Driver) generateImportOvfArgs(vmName string, hidePassword bool, ovfPath string) []string {
+func (d *ESX5Driver) generateImportOvfArgs(vmName string, datastore string, hidePassword bool, ovfPath string) []string {
 	password := url.QueryEscape(d.Password)
 	if hidePassword {
 		password = "****"
 	}
 	return []string{
 		"--name=" + vmName,
+		"--datastore=" + datastore,
 		"--machineOutput", //required, or extractVmId will not work!
 		"--diskMode=thin",
 		"--noSSLVerify=true",
