@@ -6,6 +6,8 @@ import (
 	vmwcommon "github.com/mitchellh/packer/builder/vmware/common"
 	"github.com/mitchellh/packer/packer"
 	"log"
+	"os"
+	"path/filepath"
 	"time"
 )
 
@@ -78,6 +80,8 @@ func (s *StepImportOvf) Cleanup(state multistep.StateBag) {
 				}
 			}
 		}
+		tempVmxPath := state.Get("vmx_path").(string)
+		os.RemoveAll(filepath.Dir(tempVmxPath))
 	}
 	log.Printf("StepImportOvf.Cleanup exit")
 }
