@@ -122,7 +122,7 @@ builder.
     the builder. By default this is "output-BUILDNAME" where "BUILDNAME" is the
     name of the build.
 
-- `remote_cache_datastore` (string) - The path to the datastore where
+-   `remote_cache_datastore` (string) - The path to the datastore where
     supporting files will be stored during the build on the remote machine. By
     default this is the same as the `remote_datastore` option. This only has an
     effect if `remote_type` is enabled.
@@ -175,7 +175,7 @@ builder.
     slightly larger. If you find this to be the case, you can disable compaction
     using this configuration value.
 
-- `skip_export` (boolean) - Defaults to `false`. When enabled, Packer will
+-   `skip_export` (boolean) - Defaults to `false`. When enabled, Packer will
     not export the VM. Useful if the build output is not the resultant image,
     but created inside the VM.
 
